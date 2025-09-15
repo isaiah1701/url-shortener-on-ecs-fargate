@@ -1,4 +1,9 @@
 venv/
 .venv/
 *venv/
-.terraform/
+# Terraform local files
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+crash.log
