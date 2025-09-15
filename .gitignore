@@ -7,3 +7,8 @@ venv/
 *.tfstate.*
 .terraform.lock.hcl
 crash.log
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+crash.log
