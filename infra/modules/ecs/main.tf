@@ -34,16 +34,16 @@ resource "aws_ecs_task_definition" "this" {
 resource "aws_ecs_service" "this" {
 
 
-    name = "${var.name}-service"
-    cluster = aws_ecs_cluster.this.id 
-    task_definition = aws_ecs_task_definition.this.arn 
-    desired_count = var.desired_count
-    launch_type = var.launch_type
+  name            = "${var.name}-service"
+  cluster         = aws_ecs_cluster.this.id
+  task_definition = aws_ecs_task_definition.this.arn
+  desired_count   = var.desired_count
+  launch_type     = var.launch_type
 
-    network_configuration {
-      subnets = var.subnets_ids 
-      security_groups = var.security_groups_ids 
-      assign_public_ip = false
-    }
+  network_configuration {
+    subnets          = var.subnets_ids
+    security_groups  = var.security_groups_ids
+    assign_public_ip = false
+  }
 
 }

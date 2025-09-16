@@ -4,9 +4,14 @@ variable "image_tag_mutability" {
   type        = string
   default     = "IMMUTABLE"
 }
-variable "scan_on_push"{
-    description = "ecr image scanning"
+variable "scan_on_push" {
+  description = "ecr image scanning"
 
-    type = string 
-    default = "true"
+  type    = string
+  default = "true"
+}
+
+variable "force_delete" {
+  type    = bool
+  default = "true"
 }

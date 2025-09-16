@@ -1,7 +1,7 @@
 resource "aws_ecr_repository" "ecsv2" {
-  name                 = "${var.name}"
+  name                 = var.name
   image_tag_mutability = "IMMUTABLE_WITH_EXCLUSION"
- 
+
   image_scanning_configuration {
     scan_on_push = var.scan_on_push
   }
@@ -11,4 +11,5 @@ resource "aws_ecr_repository" "ecsv2" {
     filter_type = "WILDCARD"
   }
 
+  force_delete = var.force_delete
 }
