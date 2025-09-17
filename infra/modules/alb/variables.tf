@@ -31,16 +31,16 @@ variable "certificate_arn" {
 }
 
 variable "enable_deletion_protection" {
-  type        = bool
-  default     = true
+  type    = bool
+  default = true
 }
 
 variable "idle_timeout" {
-  type        = number
-  default     = 60
+  type    = number
+  default = 60
 }
 
 variable "tags" {
-  type        = map(string)
-  default     = {}
+  type    = map(string)
+  default = {}
 }

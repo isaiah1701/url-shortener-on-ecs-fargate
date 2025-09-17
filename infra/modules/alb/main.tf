@@ -46,10 +46,10 @@ resource "aws_lb" "this" {
 }
 
 resource "aws_lb_target_group" "app" {
-  name        = "${var.name}-tg"
-  port        = var.app_port
-  protocol    = "HTTP"
-  vpc_id      = var.vpc_id
+  name     = "${var.name}-tg"
+  port     = var.app_port
+  protocol = "HTTP"
+  vpc_id   = var.vpc_id
 
   # ECS Fargate requires target_type = ip
   target_type = "ip"
@@ -63,8 +63,8 @@ resource "aws_lb_target_group" "app" {
     timeout             = 5
   }
 
- 
- 
+
+
 
   tags = local.common_tags
 }

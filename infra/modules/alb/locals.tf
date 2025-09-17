@@ -1,8 +1,8 @@
 locals {
   # Opinionated defaults every resource in this module should carry
   default_tags = {
-    
-    Module    = "alb"
+
+    Module = "alb"
   }
 
   # Merge default tags with any caller-provided tags
