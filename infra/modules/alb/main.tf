@@ -39,7 +39,7 @@ resource "aws_lb" "this" {
   idle_timeout               = var.idle_timeout
   enable_http2               = true
 
-  # Cross-zone = better balancing under AZ skew
+ # prevent imbalace
   enable_cross_zone_load_balancing = true
 
   tags = local.common_tags
