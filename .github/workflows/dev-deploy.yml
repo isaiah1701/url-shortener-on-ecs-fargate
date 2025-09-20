@@ -1,0 +1,14 @@
+name: Dev Deploy
+
+on: 
+  workflow_run: 
+    workflows: ["Build"]
+    types: 
+      - completed 
+            
+jobs: 
+  deploy: 
+    runs-on: ubuntu-latest 
+    steps: 
+      - name: Say hello
+        run: echo "hello world"
