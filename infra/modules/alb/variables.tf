@@ -1,6 +1,8 @@
-variable "name" {
+variable "alb_name" {
   description = "Base name (env-app)"
   type        = string
+  default     = "alb"
+
 }
 
 variable "vpc_id" {
@@ -16,23 +18,24 @@ variable "public_subnet_ids" {
 variable "app_port" {
   type        = number
   description = "Container/app port exposed via target group"
-  default     = 3000
+  default     = 8080
 }
 
 variable "health_check_path" {
   type        = string
   description = "Health check path for target group"
-  default     = "/health"
+  default     = "/healthz"
 }
 
 variable "certificate_arn" {
   type        = string
   description = "ACM cert ARN for HTTPS listener (eu-west-2 for you)"
+
 }
 
 variable "enable_deletion_protection" {
   type    = bool
-  default = true
+  default = false
 }
 
 variable "idle_timeout" {
@@ -43,4 +46,10 @@ variable "idle_timeout" {
 variable "tags" {
   type    = map(string)
   default = {}
+}
+
+
+variable "security_group_id" {
+  description = "Security group ID to attach to the ALB"
+  type        = string
 }
