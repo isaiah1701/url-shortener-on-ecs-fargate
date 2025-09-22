@@ -1,12 +1,12 @@
-output "role_name" {
-  value = aws_iam_role.this.name
+
+
+
+output "execution_role_arn" {
+  description = "IAM role ARN for ECS task execution (ECR pull + logs)"
+  value       = aws_iam_role.execution.arn
 }
 
-output "role_arn" {
-  value = aws_iam_role.this.arn
-}
-
-output "inline_policy_arn" {
-  value       = length(aws_iam_policy.inline) > 0 ? aws_iam_policy.inline[0].arn : null
-  description = "ARN of the generated inline policy (if any)"
+output "task_role_arn" {
+  description = "IAM role ARN for the application container"
+  value       = aws_iam_role.task.arn
 }

@@ -1,5 +1,5 @@
 variable "name" {}
-variable "cidr_block" {}
+variable "cidr_block" { type = string }
 variable "azs" { type = list(string) }
 variable "public_subnet_cidrs" {
   description = "List of CIDRs for public subnets"

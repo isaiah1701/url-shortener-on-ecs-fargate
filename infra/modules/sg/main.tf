@@ -1,9 +1,9 @@
 # ALB SG
 resource "aws_security_group" "alb" {
-  name        = "${var.name}-alb-sg"
+  name        = "${var.sg_name}-alb-sg"
   vpc_id      = var.vpc_id
   description = "ALB SG"
-  tags        = var.tags
+  
 }
 
 resource "aws_security_group_rule" "alb_ingress_http" {
@@ -38,16 +38,16 @@ resource "aws_security_group_rule" "alb_egress_all" {
 
 # ECS Tasks SG
 resource "aws_security_group" "ecs_tasks" {
-  name        = "${var.name}-ecs-sg"
+  name        = "${var.sg_name}-ecs-sg"
   vpc_id      = var.vpc_id
   description = "ECS tasks SG"
-  tags        = var.tags
+ 
 }
 
 resource "aws_security_group_rule" "ecs_ingress_from_alb" {
   type                     = "ingress"
-  from_port                = var.app_port # 8080 default
-  to_port                  = var.app_port
+  from_port                = 8080 # 8080 default
+  to_port                  = 8080
   protocol                 = "tcp"
   source_security_group_id = aws_security_group.alb.id   # <- ALB SG as source
   security_group_id        = aws_security_group.ecs_tasks.id

@@ -1,50 +1,49 @@
-resource "aws_iam_role" "this" {
-  name = var.role_name
+resource "aws_iam_role" "execution" {
+  name = "${var.iam_name}-ecs-execution"
 
-  assume_role_policy = jsondecode(
-    {
-
-      Version = "2012-10-17"
-
-      Statement = [{
-
-        Effect = "Allow"
-        Principal = {
-          Service = var.principal_service
-        },
-        Action = "sts:AssumeRole"
-      }]
-
-    }
-
-  )
-
-
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = { Service = "ecs-tasks.amazonaws.com" },
+      Action    = "sts:AssumeRole"
+    }]
+  })
 }
 
+resource "aws_iam_role_policy_attachment" "execution_managed" {
+  role       = aws_iam_role.execution.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
 
+resource "aws_iam_role" "task" {
+  name = "${var.iam_name}-ecs-task"
 
-resource "aws_iam_policy" "inline" {
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = { Service = "ecs-tasks.amazonaws.com" },
+      Action    = "sts:AssumeRole"
+    }]
+  })
+}
 
-  count = length(var.policy_statements) > 0 ? 1 : 0
-  name  = "${var.role_name}-inline"
+# Least-privilege DynamoDB access for your app
+resource "aws_iam_role_policy" "task_dynamodb" {
+  name = "${var.iam_name}-task-dynamodb"
+  role = aws_iam_role.task.id
 
   policy = jsonencode({
     Version = "2012-10-17",
-    Statement = [
-      for s in var.policy_statements : {
-        Effect   = s.effect,
-        Action   = s.actions,
-        Resource = s.resources
-      }
-    ]
+    Statement = [{
+      Effect   = "Allow",
+      Action   = [
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem"
+      ],
+      Resource = var.dynamodb_table_arn
+    }]
   })
-
-}
-
-
-resource "aws_iam_role_policy_attachment" "inline_attach" {
-  count      = length(var.policy_statements) > 0 ? 1 : 0
-  role       = aws_iam_role.this.name
-  policy_arn = aws_iam_policy.inline[0].arn
 }

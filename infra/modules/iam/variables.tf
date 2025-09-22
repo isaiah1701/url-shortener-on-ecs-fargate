@@ -1,7 +1,3 @@
-variable "role_name" {
-  description = "Name of the IAM role (e.g., dev-urlshortener-task)"
-  type        = string
-}
 
 variable "principal_service" {
   description = "AWS service that will assume the role "
@@ -29,4 +25,12 @@ variable "tags" {
   description = "Tags for the role and inline policy"
   type        = map(string)
   default     = {}
+}
+variable "dynamodb_table_arn" {
+  description = "ARN of the DynamoDB table the app will access"
+  type        = string
+}
+variable "iam_name" {
+  description = "Base name/prefix (e.g. urlshortener-dev)"
+  type        = string
 }
