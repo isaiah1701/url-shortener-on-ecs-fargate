@@ -21,16 +21,7 @@ variable "azs" {
   type        = list(string)
 }
 
-variable "execution_role_arn" {
-  type        = string
-  description = " execution role arn"
 
-}
-variable "subnet_ids" {
-  type        = list(string)
-  description = "subnet ids"
-
-}
 variable "container_image" {
   description = "container image"
   type        = string
@@ -39,9 +30,7 @@ variable "container_image" {
 variable "certificate_arn" {
   type = string
 }
-variable "task_role_arn" {
-  type = string
-}
+
 
 variable "dynamodb_table_arn" {
   type = string
@@ -50,4 +39,7 @@ variable "dynamodb_table_arn" {
 
 variable "alb_sg_id" {
   type = string
+}
+variable "region"      {
+     type = string 
 }
