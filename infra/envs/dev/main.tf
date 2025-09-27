@@ -8,7 +8,7 @@ module "alb" {
 }
 module "ecr" {
   source = "../../modules/ecr"
-  name   = "${var.environment}-vpc"
+  name   = "${var.environment}-urlshortener"
 
 
 }
@@ -33,6 +33,8 @@ module "ecs" {
   security_group_ids = [module.sg.ecs_tasks_sg_id]
   task_role_arn      = module.iam.task_role_arn
   table_name         = module.dynamodb.table_name
+  vpc_id = module.vpc.vpc_id
+  target_group = module.alb.target_group_arn
 }
 
 module "dynamodb" {
