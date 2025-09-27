@@ -66,3 +66,6 @@ variable "launch_type" {
 }
 
 
+variable "table_name" {
+  type = string
+}

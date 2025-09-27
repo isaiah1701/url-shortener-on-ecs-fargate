@@ -41,7 +41,7 @@ resource "aws_iam_role_policy" "task_dynamodb" {
       Action   = [
         "dynamodb:GetItem",
         "dynamodb:PutItem",
-        "dynamodb:UpdateItem"
+        
       ],
       Resource = var.dynamodb_table_arn
     }]

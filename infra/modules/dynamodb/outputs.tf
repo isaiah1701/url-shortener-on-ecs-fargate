@@ -1,6 +1,6 @@
-output "ShortenedUrl" {
+output "table_name" {
   description = "DynamoDB table name"
-  value       = aws_dynamodb_table.ShortenedUrl.name
+  value       = "ShortenedURL"
 }
 
 output "table_arn" {

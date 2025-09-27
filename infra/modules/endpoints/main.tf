@@ -14,6 +14,23 @@ resource "aws_vpc_endpoint" "dynamodb" {
 
 }
 
+resource "aws_vpc_endpoint" "ecr_api" {
+  vpc_id               = var.vpc_id
+  service_name         = "com.amazonaws.${var.region}.ecr.api"
+  vpc_endpoint_type    = "Interface"
+  subnet_ids           = var.private_subnet_ids
+   security_group_ids   = [var.ecr_sg_id]
+  private_dns_enabled  = true
+}
+
+resource "aws_vpc_endpoint" "ecr_dkr" {
+  vpc_id               = var.vpc_id
+  service_name         = "com.amazonaws.${var.region}.ecr.dkr"
+  vpc_endpoint_type    = "Interface"
+  subnet_ids           = var.private_subnet_ids
+  security_group_ids   = [var.ecr_sg_id]
+  private_dns_enabled  = true
+}
 
 resource "aws_route_table" "public" {
   vpc_id = var.vpc_id

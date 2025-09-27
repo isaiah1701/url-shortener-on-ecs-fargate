@@ -27,9 +27,6 @@ variable "container_image" {
   type        = string
 
 }
-variable "certificate_arn" {
-  type = string
-}
 
 
 variable "dynamodb_table_arn" {
@@ -40,6 +37,16 @@ variable "dynamodb_table_arn" {
 variable "alb_sg_id" {
   type = string
 }
-variable "region"      {
-     type = string 
+variable "region" {
+  type = string
+}
+variable "cloudflare_api_token" {
+  type      = string
+  sensitive = true
+}
+variable "domain_name" {
+  type = string
+}
+variable "cloudflare_zone_id" {
+  type = string
 }

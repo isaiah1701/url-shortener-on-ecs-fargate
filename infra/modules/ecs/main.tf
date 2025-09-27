@@ -26,6 +26,9 @@ resource "aws_ecs_task_definition" "this" {
           protocol      = "tcp"
         }
       ]
+        environment = [
+      { "name": "TABLE_NAME", "value": var.table_name }
+    ]
     }
   ])
 }
