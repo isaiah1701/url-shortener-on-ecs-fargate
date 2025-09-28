@@ -48,3 +48,7 @@ variable "public_subnets" {
 variable "ecr_sg_id"{
   type = string 
 }
+
+variable "aws_region" {
+  type = string
+}

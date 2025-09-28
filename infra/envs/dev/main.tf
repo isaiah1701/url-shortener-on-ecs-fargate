@@ -36,6 +36,7 @@ module "ecs" {
   vpc_id = module.vpc.vpc_id
   target_group = module.alb.target_group_arn
   aws_region = var.region
+  
 }
 
 module "dynamodb" {
@@ -109,6 +110,8 @@ module "endpoints" {
 
 
   }
+
+  aws_region = var.region
 }
 
 

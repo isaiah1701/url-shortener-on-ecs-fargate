@@ -56,3 +56,12 @@ resource "aws_route_table_association" "private_assoc" {
   subnet_id     = var.private_subnet_ids[count.index]
   route_table_id = aws_route_table.private.id
 }
+
+resource "aws_vpc_endpoint" "logs" {
+  vpc_id              = var.vpc_id
+  service_name        = "com.amazonaws.${var.aws_region}.logs"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = var.private_subnet_ids
+ security_group_ids   = [var.ecr_sg_id]
+  private_dns_enabled = true
+}

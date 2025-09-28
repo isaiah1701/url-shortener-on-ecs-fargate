@@ -1,12 +1,12 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import RedirectResponse
-import os, hashlib, time
 from .ddb import put_mapping, get_mapping
 
 app = FastAPI()
 
 @app.get("/healthz")
 def health():
+    import time
     return {"status": "ok", "ts": int(time.time())}
 
 @app.post("/shorten")
@@ -15,8 +15,8 @@ async def shorten(req: Request):
     url = body.get("url")
     if not url:
         raise HTTPException(400, "url required")
-    short = hashlib.sha256(url.encode()).hexdigest()[:8]
-    put_mapping(short, url)
+
+    short = put_mapping(url)          # ddb.py generates slug
     return {"short": short, "url": url}
 
 @app.get("/{short_id}")

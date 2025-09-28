@@ -11,3 +11,7 @@ output "service_name" {
 
 
 
+output "ecs_log_group_name" {
+  description = "CloudWatch log group name for ECS tasks"
+  value       = aws_cloudwatch_log_group.ecs.name
+}
