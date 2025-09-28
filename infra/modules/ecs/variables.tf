@@ -69,3 +69,13 @@ variable "launch_type" {
 variable "table_name" {
   type = string
 }
+
+variable "vpc_id" {
+  type = string
+}
+variable "target_group" {
+  type = string
+}
+variable "aws_region" {
+  type = string 
+}

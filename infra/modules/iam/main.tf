@@ -47,3 +47,21 @@ resource "aws_iam_role_policy" "task_dynamodb" {
     }]
   })
 }
+
+
+resource "aws_iam_role_policy" "execution_logs" {
+  name = "ecs-execution-logs"
+  role = aws_iam_role.execution.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect   = "Allow",
+      Action   = [
+        "logs:CreateLogGroup",
+        "logs:DescribeLogGroups"
+      ],
+      Resource = "*"
+    }]
+  })
+}

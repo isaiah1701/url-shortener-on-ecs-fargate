@@ -35,6 +35,7 @@ module "ecs" {
   table_name         = module.dynamodb.table_name
   vpc_id = module.vpc.vpc_id
   target_group = module.alb.target_group_arn
+  aws_region = var.region
 }
 
 module "dynamodb" {
@@ -116,7 +117,28 @@ module "acm" {
 
   source             = "../../modules/acm"
   domain_name        = var.domain_name
-  cloudflare_zone_id = var.cloudflare_zone_id
+ 
+  zone = module.route53.zone_id
+  
+  
+ 
 
 }
 
+module "route53" {
+  source = "../../modules/route53"
+  domain = var.domain_name
+ 
+}
+
+resource "aws_route53_record" "root_alias" {
+  zone_id = module.route53.zone_id
+  name    = var.domain_name  
+  type    = "A"
+
+  alias {
+    name                   = module.alb.alb_dns_name  
+    zone_id                = module.alb.alb_zone_id   
+    evaluate_target_health = true
+  }
+}

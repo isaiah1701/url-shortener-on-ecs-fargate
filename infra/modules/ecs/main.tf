@@ -4,6 +4,11 @@ resource "aws_ecs_cluster" "this" {
 
 }
 
+resource "aws_cloudwatch_log_group" "ecs" {
+  name              = "/ecs/dev-urlshortener"
+  retention_in_days = 7
+}
+
 resource "aws_ecs_task_definition" "this" {
   family                   = "${var.ecs_name}-task"
   network_mode             = "awsvpc"
@@ -12,7 +17,6 @@ resource "aws_ecs_task_definition" "this" {
   memory                   = var.memory
   execution_role_arn       = var.execution_role_arn
   task_role_arn            = var.task_role_arn
-
 
   container_definitions = jsonencode([
     {
@@ -26,9 +30,20 @@ resource "aws_ecs_task_definition" "this" {
           protocol      = "tcp"
         }
       ]
-        environment = [
-      { "name": "TABLE_NAME", "value": var.table_name }
-    ]
+      environment = [
+        {
+          name  = "TABLE_NAME"
+          value = var.table_name
+        }
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         =  aws_cloudwatch_log_group.ecs.name
+          awslogs-region        = var.aws_region
+          awslogs-stream-prefix = "appv2"
+        }
+      }
     }
   ])
 }
@@ -48,5 +63,10 @@ resource "aws_ecs_service" "this" {
     security_groups  = var.security_group_ids
     assign_public_ip = false
   }
-
+ load_balancer {
+  target_group_arn = var.target_group
+  container_name   = var.ecs_name      # must match container name in your task def JSON
+  container_port   = var.container_port    # must match the portMapping in the task def
 }
+}
+

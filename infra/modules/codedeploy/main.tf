@@ -4,7 +4,7 @@ resource "aws_codedeploy_app" "this" {
 }
 
 
-resource "aws_codedeploy_deployment_group" "example" {
+resource "aws_codedeploy_deployment_group" "codedeploy" {
   app_name               = aws_codedeploy_app.example.name
   deployment_config_name = "CodeDeployDefault.ECSLinear10PercentEvery1Minute"
   deployment_group_name  = "example"
