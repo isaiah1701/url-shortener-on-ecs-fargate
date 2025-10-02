@@ -16,3 +16,4 @@ crash.log
 *.auto.tfvars
 terraform.tfvarsnotes
 notes
+local

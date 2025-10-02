@@ -25,18 +25,20 @@ module "vpc" {
 
 
 module "ecs" {
-
   source             = "../../modules/ecs"
+  ecs_name           = "${var.environment}-urlshortener"  # This sets the container name
   execution_role_arn = module.iam.execution_role_arn
   subnet_ids         = module.vpc.private_subnet_ids
   container_image    = module.ecr.repository_url
   security_group_ids = [module.sg.ecs_tasks_sg_id]
   task_role_arn      = module.iam.task_role_arn
   table_name         = module.dynamodb.table_name
-  vpc_id = module.vpc.vpc_id
-  target_group = module.alb.target_group_arn
-  aws_region = var.region
+  vpc_id             = module.vpc.vpc_id
+   blue_tg_name     = module.alb.blue_tg_name
+  aws_region         = var.region
   
+  
+
 }
 
 module "dynamodb" {
@@ -71,19 +73,19 @@ module "endpoints" {
   ecr_sg_id           = module.sg.ecr_sg_id
 
   InterfaceEndpoints = {
-  ecr_api = {
-    service_name        = "com.amazonaws.${var.region}.ecr.api"
-    subnet_ids          = module.vpc.private_subnet_ids
-    security_group_ids  = [module.sg.ecr_sg_id]  # ← make it a list
-    private_dns_enabled = true
+    ecr_api = {
+      service_name        = "com.amazonaws.${var.region}.ecr.api"
+      subnet_ids          = module.vpc.private_subnet_ids
+      security_group_ids  = [module.sg.ecr_sg_id] # ← make it a list
+      private_dns_enabled = true
+    }
+    ecr_dkr = {
+      service_name        = "com.amazonaws.${var.region}.ecr.dkr"
+      subnet_ids          = module.vpc.private_subnet_ids
+      security_group_ids  = [module.sg.ecr_sg_id] # ← make it a list
+      private_dns_enabled = true
+    }
   }
-  ecr_dkr = {
-    service_name        = "com.amazonaws.${var.region}.ecr.dkr"
-    subnet_ids          = module.vpc.private_subnet_ids
-    security_group_ids  = [module.sg.ecr_sg_id]  # ← make it a list
-    private_dns_enabled = true
-  }
-}
 
 
 
@@ -118,30 +120,62 @@ module "endpoints" {
 
 module "acm" {
 
-  source             = "../../modules/acm"
-  domain_name        = var.domain_name
- 
+  source      = "../../modules/acm"
+  domain_name = var.domain_name
+
   zone = module.route53.zone_id
-  
-  
- 
+
+
+
 
 }
 
 module "route53" {
   source = "../../modules/route53"
   domain = var.domain_name
- 
+
 }
 
 resource "aws_route53_record" "root_alias" {
   zone_id = module.route53.zone_id
-  name    = var.domain_name  
+  name    = var.domain_name
   type    = "A"
 
   alias {
-    name                   = module.alb.alb_dns_name  
-    zone_id                = module.alb.alb_zone_id   
+    name                   = module.alb.alb_dns_name
+    zone_id                = module.alb.alb_zone_id
     evaluate_target_health = true
   }
+}
+
+module "codedeploy" {
+  source = "../../modules/codedeploy"
+  iam_role_arn         = module.iam.codedeploy_role_arn
+  cluster              = module.ecs.cluster_name
+  ecs_svc              = module.ecs.service_name
+  listener_arn         = module.alb.https_listener_arn
+  blue_tg_name         = module.alb.blue_tg_name
+  green_tg_name        = module.alb.green_tg_name
+  task_definition_arn  = module.ecs.task_definition_arn
+  ecr_repository_name  = module.ecr.repository_name
+  container_name = "${var.environment}-urlshortener"
+  task_role_arn = module.iam.task_role_arn
+  execution_role_arn = module.iam.execution_role_arn
+  container_repo_uri = module.ecr.repository_url
+  taskdef_family = "${var.environment}-urlshortener-task"
+  
+}
+
+module "waf"{
+  source = "../../modules/waf"
+  alb_arn = module.alb.alb_arn
+  region = var.region
+}
+
+module "cloudwatch"{
+  source = "../../modules/cloudwatch"
+  ecs_service_name = module.ecs.service_name
+  ecs_cluster_name = module.ecs.cluster_name
+  region = var.region
+  alb_load_balancer_name = module.alb.alb_arn
 }

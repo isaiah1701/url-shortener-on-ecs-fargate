@@ -47,26 +47,43 @@ resource "aws_ecs_task_definition" "this" {
     }
   ])
 }
+data "aws_lb_target_group" "blue" {
+  name = var.blue_tg_name
+}
 
 
 resource "aws_ecs_service" "this" {
-
-
   name            = "${var.ecs_name}-service"
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.this.arn
   desired_count   = var.desired_count
   launch_type     = var.launch_type
 
+  deployment_controller {
+    type = "CODE_DEPLOY"
+  }
+
   network_configuration {
     subnets          = var.subnet_ids
     security_groups  = var.security_group_ids
     assign_public_ip = false
   }
- load_balancer {
-  target_group_arn = var.target_group
-  container_name   = var.ecs_name      # must match container name in your task def JSON
-  container_port   = var.container_port    # must match the portMapping in the task def
-}
-}
 
+  load_balancer {
+    target_group_arn = data.aws_lb_target_group.blue.arn
+    container_name   = var.ecs_name
+    container_port   = var.container_port
+  }
+
+  health_check_grace_period_seconds = 30
+  propagate_tags                    = "SERVICE"
+  enable_execute_command            = true
+
+  lifecycle {
+  ignore_changes = [
+    load_balancer,
+    task_definition,   # ignore new task_def arns from image pushes
+    desired_count      # ignore changes if autoscaling adjusts replicas
+  ]
+}
+}

@@ -65,3 +65,12 @@ resource "aws_vpc_endpoint" "logs" {
  security_group_ids   = [var.ecr_sg_id]
   private_dns_enabled = true
 }
+
+resource "aws_vpc_endpoint" "cloudwatch_monitoring" {
+  vpc_id              = var.vpc_id
+  service_name        = "com.amazonaws.${var.aws_region}.monitoring"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = var.private_subnet_ids
+  security_group_ids  = [var.ecr_sg_id]
+  private_dns_enabled = true
+}

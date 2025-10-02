@@ -73,7 +73,7 @@ variable "table_name" {
 variable "vpc_id" {
   type = string
 }
-variable "target_group" {
+variable "blue_tg_name" {
   type = string
 }
 variable "aws_region" {
