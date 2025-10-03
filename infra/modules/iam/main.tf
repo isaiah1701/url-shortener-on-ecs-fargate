@@ -151,7 +151,11 @@ data "aws_iam_policy_document" "gha_trust" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_owner}/${var.github_repo}:ref:${var.allowed_ref}"]
+      values = [
+        "repo:${var.github_owner}/${var.github_repo}:ref:refs/heads/*",
+        "repo:${var.github_owner}/${var.github_repo}:ref:refs/tags/*",
+        "repo:${var.github_owner}/${var.github_repo}:ref:refs/pull/*"
+      ]
     }
   }
 }
