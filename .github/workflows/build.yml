@@ -94,6 +94,6 @@ jobs:
         run: |
           ECR_REGISTRY="${ECR_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
           IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_SHA}"
-          docker tag "${IMAGE_NAME}:ci" "${IMAGE_URI}"
+          docker tag "${IMAGE_NAME}:latest" "${IMAGE_URI}"
           docker push "${IMAGE_URI}"
           echo "image_uri=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
