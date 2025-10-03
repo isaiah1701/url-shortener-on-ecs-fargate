@@ -33,10 +33,10 @@ module "ecs" {
   security_group_ids = [module.sg.ecs_tasks_sg_id]
   task_role_arn      = module.iam.task_role_arn
   table_name         = module.dynamodb.table_name
-  vpc_id = module.vpc.vpc_id
-  target_group = module.alb.target_group_arn
-  aws_region = var.region
-  
+  vpc_id             = module.vpc.vpc_id
+  target_group       = module.alb.target_group_arn
+  aws_region         = var.region
+
 }
 
 module "dynamodb" {
@@ -71,19 +71,19 @@ module "endpoints" {
   ecr_sg_id           = module.sg.ecr_sg_id
 
   InterfaceEndpoints = {
-  ecr_api = {
-    service_name        = "com.amazonaws.${var.region}.ecr.api"
-    subnet_ids          = module.vpc.private_subnet_ids
-    security_group_ids  = [module.sg.ecr_sg_id]  # ← make it a list
-    private_dns_enabled = true
+    ecr_api = {
+      service_name        = "com.amazonaws.${var.region}.ecr.api"
+      subnet_ids          = module.vpc.private_subnet_ids
+      security_group_ids  = [module.sg.ecr_sg_id] # ← make it a list
+      private_dns_enabled = true
+    }
+    ecr_dkr = {
+      service_name        = "com.amazonaws.${var.region}.ecr.dkr"
+      subnet_ids          = module.vpc.private_subnet_ids
+      security_group_ids  = [module.sg.ecr_sg_id] # ← make it a list
+      private_dns_enabled = true
+    }
   }
-  ecr_dkr = {
-    service_name        = "com.amazonaws.${var.region}.ecr.dkr"
-    subnet_ids          = module.vpc.private_subnet_ids
-    security_group_ids  = [module.sg.ecr_sg_id]  # ← make it a list
-    private_dns_enabled = true
-  }
-}
 
 
 
@@ -118,30 +118,30 @@ module "endpoints" {
 
 module "acm" {
 
-  source             = "../../modules/acm"
-  domain_name        = var.domain_name
- 
+  source      = "../../modules/acm"
+  domain_name = var.domain_name
+
   zone = module.route53.zone_id
-  
-  
- 
+
+
+
 
 }
 
 module "route53" {
   source = "../../modules/route53"
   domain = var.domain_name
- 
+
 }
 
 resource "aws_route53_record" "root_alias" {
   zone_id = module.route53.zone_id
-  name    = var.domain_name  
+  name    = var.domain_name
   type    = "A"
 
   alias {
-    name                   = module.alb.alb_dns_name  
-    zone_id                = module.alb.alb_zone_id   
+    name                   = module.alb.alb_dns_name
+    zone_id                = module.alb.alb_zone_id
     evaluate_target_health = true
   }
 }

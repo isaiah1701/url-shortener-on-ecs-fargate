@@ -6,6 +6,6 @@ resource "aws_ecr_repository" "ecr" {
     scan_on_push = var.scan_on_push
   }
 
- 
+
   force_delete = var.force_delete
 }

@@ -38,6 +38,6 @@ output "green_tg_arn" {
   description = "ARN of the green target group"
   value       = aws_lb_target_group.green.arn
 }
- output "alb_zone_id"{
+output "alb_zone_id" {
   value = aws_lb.this.zone_id
- }
+}

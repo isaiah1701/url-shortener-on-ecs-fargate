@@ -1,8 +1,8 @@
 variable "iam_role_arn" {
-    type = string
+  type = string
 }
 variable "cluster" {
-  type =string
+  type = string
 }
 
 variable "ecs_svc" {

@@ -39,7 +39,7 @@ resource "aws_ecs_task_definition" "this" {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          awslogs-group = aws_cloudwatch_log_group.ecs.name
+          awslogs-group         = aws_cloudwatch_log_group.ecs.name
           awslogs-region        = var.aws_region
           awslogs-stream-prefix = "appv2"
         }
@@ -80,10 +80,10 @@ resource "aws_ecs_service" "this" {
   enable_execute_command            = true
 
   lifecycle {
-  ignore_changes = [
-    load_balancer,
-    task_definition,   # ignore new task_def arns from image pushes
-    desired_count      # ignore changes if autoscaling adjusts replicas
-  ]
-}
+    ignore_changes = [
+      load_balancer,
+      task_definition, # ignore new task_def arns from image pushes
+      desired_count    # ignore changes if autoscaling adjusts replicas
+    ]
+  }
 }

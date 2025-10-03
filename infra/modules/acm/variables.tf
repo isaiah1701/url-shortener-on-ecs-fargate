@@ -1,7 +1,7 @@
 variable "domain_name" {
   description = "The main domain for the cert "
   type        = string
-  default = "short.isaiahmichael.com"
+  default     = "short.isaiahmichael.com"
 }
 
 
@@ -9,5 +9,5 @@ variable "domain_name" {
 
 
 variable "zone" {
-  type = string 
+  type = string
 }

@@ -1,41 +1,103 @@
-name: Build 
+name: Build pipeline
 
-on: [push]
+on:
+  push:
+    branches: ["**"]
+
+permissions:
+  contents: read
+  actions: read
+  security-events: write
 
 jobs:
-  build:
+  validate-terraform-and-docker:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write     # required for OIDC
+      contents: read
+      security-events: write
+
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to docker hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build docker image
-        env:
-          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
-          IMAGE_NAME: ${{ github.event.repository.name }}   
-          GIT_SHA: ${{ github.sha }}
+      - name: Load .env
         run: |
-          cd app
-          IMAGE="${DOCKERHUB_USER}/${IMAGE_NAME}"
-          echo "IMAGE=${IMAGE}" >> "$GITHUB_ENV"
-          echo "IMAGE_SHA=${IMAGE}:${GIT_SHA}" >> "$GITHUB_ENV"
+          test -f .env || { echo ".env missing"; exit 1; }
+          set -a
+          source .env
+          set +a
 
-          docker build -t "${IMAGE}:latest" -t "${IMAGE}:${GIT_SHA}" .
-          cd .. 
-
-      - name: Scan image with Trivy (only HIGH and CRITICAL)
-        uses: aquasecurity/trivy-action@v0.17.0
+      - name: Set up Python for Checkov
+        uses: actions/setup-python@v5
         with:
-             image-ref: ${{ env.IMAGE }}:latest
-             format: 'sarif'
-             output: 'trivy-report.sarif'
-             severity: 'HIGH,CRITICAL'
+          python-version: "3.x"
+
+      - name: Install Checkov
+        run: |
+          pip install --upgrade pip
+          pip install checkov
+
+      - name: Run Checkov (do not fail the job)
+        id: checkov
+        continue-on-error: true
+        run: |
+          echo "🔍 Running Checkov security scan..."
+          if checkov -d . --framework terraform --output cli --quiet; then
+            echo "checkov_failed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "⚠️ Checkov found security issues - check output above"
+            echo "checkov_failed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkov results summary
+        run: |
+          if [[ "${{ steps.checkov.outputs.checkov_failed }}" == "true" ]]; then
+            echo "⚠️ CHECKOV FOUND ISSUES (continuing)"
+          else
+            echo "✅ Checkov passed"
+          fi
+
+      - name: Build Docker image for scanning
+        run: |
+          docker build -t "${IMAGE_NAME}:ci" .
+
+      - name: Trivy image → SARIF (do not fail, just report)
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: ${{ env.IMAGE_NAME || 'urlshortener' }}:ci
+          format: sarif
+          output: trivy-image.sarif
+          exit-code: "0"
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-image.sarif
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ env.ECR_ACCOUNT_ID }}:role/gha-oidc-simple
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Ensure ECR repository exists
+        run: |
+          aws ecr describe-repositories --repository-names "${ECR_REPOSITORY}" >/dev/null 2>&1 || \
+          aws ecr create-repository --repository-name "${ECR_REPOSITORY}" >/dev/null
+
+      - name: Login to ECR
+        run: |
+          aws ecr get-login-password | docker login --username AWS --password-stdin \
+            ${ECR_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+
+      - name: Tag and push image to ECR
+        run: |
+          ECR_REGISTRY="${ECR_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+          IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_SHA}"
+          docker tag "${IMAGE_NAME}:ci" "${IMAGE_URI}"
+          docker push "${IMAGE_URI}"
+          echo "image_uri=${IMAGE_URI}" >> $GITHUB_OUTPUT
+
+
+

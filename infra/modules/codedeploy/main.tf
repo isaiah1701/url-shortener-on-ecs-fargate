@@ -1,22 +1,22 @@
 # Lambda function to handle ECR events and trigger CodeDeploy
 resource "aws_lambda_function" "trigger_deploy" {
-  filename = data.archive_file.lambda_zip.output_path
-  function_name = "ecr-trigger-codedeploy"
-  role          = aws_iam_role.lambda_role.arn
-  handler       = "index.handler"
-  runtime       = "nodejs20.x"
+  filename         = data.archive_file.lambda_zip.output_path
+  function_name    = "ecr-trigger-codedeploy"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "index.handler"
+  runtime          = "nodejs20.x"
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
   environment {
     variables = {
-      APPLICATION_NAME = "url-code-deploy"
-      DEPLOYMENT_GROUP = "urlshortener"
+      APPLICATION_NAME   = "url-code-deploy"
+      DEPLOYMENT_GROUP   = "urlshortener"
       TASKDEF_FAMILY     = var.taskdef_family
- TASK_ROLE_ARN      = var.task_role_arn
- EXECUTION_ROLE_ARN = var.execution_role_arn
- CONTAINER_REPO_URI = var.container_repo_uri
-      CONTAINER_NAME = var.container_name
-      CONTAINER_PORT = tostring(var.container_port)
+      TASK_ROLE_ARN      = var.task_role_arn
+      EXECUTION_ROLE_ARN = var.execution_role_arn
+      CONTAINER_REPO_URI = var.container_repo_uri
+      CONTAINER_NAME     = var.container_name
+      CONTAINER_PORT     = tostring(var.container_port)
     }
   }
 }
@@ -104,9 +104,9 @@ resource "aws_cloudwatch_event_rule" "ecr_push" {
     source      = ["aws.ecr"]
     detail-type = ["ECR Image Action"]
     detail = {
-      action-type = ["PUSH"]
+      action-type     = ["PUSH"]
       repository-name = [var.ecr_repository_name]
-      image-tag      = ["latest"]
+      image-tag       = ["latest"]
     }
   })
 }
@@ -266,7 +266,7 @@ resource "aws_iam_role_policy" "eventbridge_policy" {
       {
         Effect = "Allow"
         Action = [
-           "codedeploy:CreateDeployment",
+          "codedeploy:CreateDeployment",
           "codedeploy:GetDeployment",
           "codedeploy:GetDeploymentConfig",
           "codedeploy:GetApplication",
@@ -295,7 +295,7 @@ resource "aws_codedeploy_deployment_group" "codedeploy" {
   blue_green_deployment_config {
     deployment_ready_option {
       action_on_timeout    = "CONTINUE_DEPLOYMENT"
-      wait_time_in_minutes = 0  # Don't wait for manual approval
+      wait_time_in_minutes = 0 # Don't wait for manual approval
     }
 
     terminate_blue_instances_on_deployment_success {
@@ -317,16 +317,16 @@ resource "aws_codedeploy_deployment_group" "codedeploy" {
   load_balancer_info {
     target_group_pair_info {
       prod_traffic_route {
-  listener_arns = [var.listener_arn]
-}
+        listener_arns = [var.listener_arn]
+      }
 
-target_group {
-  name = var.blue_tg_name
-}
+      target_group {
+        name = var.blue_tg_name
+      }
 
-target_group {
-  name = var.green_tg_name
-}
+      target_group {
+        name = var.green_tg_name
+      }
 
     }
   }

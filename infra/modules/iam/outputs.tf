@@ -19,3 +19,7 @@ output "codedeploy_role_arn" {
   description = "The ARN of the IAM role used by CodeDeploy"
   value       = aws_iam_role.codedeploy.arn
 }
+output "gha_role_arn" {
+  value = aws_iam_role.gha_oidc.arn
+}
+

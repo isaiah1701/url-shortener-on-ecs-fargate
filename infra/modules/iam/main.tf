@@ -4,7 +4,7 @@ resource "aws_iam_role" "execution" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect = "Allow",
+      Effect    = "Allow",
       Principal = { Service = "ecs-tasks.amazonaws.com" },
       Action    = "sts:AssumeRole"
     }]
@@ -22,7 +22,7 @@ resource "aws_iam_role" "task" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect = "Allow",
+      Effect    = "Allow",
       Principal = { Service = "ecs-tasks.amazonaws.com" },
       Action    = "sts:AssumeRole"
     }]
@@ -37,11 +37,11 @@ resource "aws_iam_role_policy" "task_dynamodb" {
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect   = "Allow",
-      Action   = [
+      Effect = "Allow",
+      Action = [
         "dynamodb:GetItem",
         "dynamodb:PutItem",
-        
+
       ],
       Resource = var.dynamodb_table_arn
     }]
@@ -56,8 +56,8 @@ resource "aws_iam_role_policy" "execution_logs" {
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect   = "Allow",
-      Action   = [
+      Effect = "Allow",
+      Action = [
         "logs:CreateLogGroup",
         "logs:DescribeLogGroups"
       ],
@@ -119,7 +119,88 @@ resource "aws_iam_role_policy" "codedeploy_policy" {
 
 
 
-resource "aws_iam_role_policy_attachment" "codedeploy_attach" {
-  role       = aws_iam_role.codedeploy.name
-  policy_arn = "arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS"
+
+
+# --- OIDC provider stays the same ---
+resource "aws_iam_openid_connect_provider" "github" {
+  url            = "https://token.actions.githubusercontent.com"
+  client_id_list = ["sts.amazonaws.com"]
+  thumbprint_list = [
+    "6938fd4d98bab03faadb97b34396831e3780aea1",
+    "1c58a3a8518e8759bf075b55a9f3b6d8e5eeb0e7"
+  ]
 }
+
+# --- Trust policy (who can assume the role) ---
+data "aws_iam_policy_document" "gha_trust" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.github.arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringLike"
+      variable = "token.actions.githubusercontent.com:sub"
+      values   = ["repo:${var.github_owner}/${var.github_repo}:ref:${var.allowed_ref}"]
+    }
+  }
+}
+
+# --- The role to be assumed by GitHub OIDC ---
+resource "aws_iam_role" "gha_oidc" {
+  name                 = "gha-oidc-simple"
+  description          = "Minimal role assumed by GitHub Actions via OIDC"
+  assume_role_policy   = data.aws_iam_policy_document.gha_trust.json
+  max_session_duration = 3600
+}
+
+# --- Define a customer-managed policy (replace with real perms later) ---
+data "aws_iam_policy_document" "github_policy" {
+  statement {
+    effect = "Allow"
+    actions = ["ecr:GetAuthorizationToken"]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:InitiateLayerUpload",
+      "ecr:UploadLayerPart",
+      "ecr:CompleteLayerUpload",
+      "ecr:PutImage",
+      "ecr:DescribeRepositories",
+      "ecr:BatchGetImage",
+      "ecr:GetDownloadUrlForLayer"
+    ]
+    resources = [
+      "arn:aws:ecr:${var.aws_region}:${var.account_id}:repository/${var.ecr_repository}"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "github_managed" {
+  name        = "gha-oidc-simple-policy"
+  description = "Reusable managed policy for GitHub OIDC role"
+  policy      = data.aws_iam_policy_document.github_policy.json
+}
+
+# --- Attach the managed policy to the role ---
+resource "aws_iam_role_policy_attachment" "attach" {
+  role       = aws_iam_role.gha_oidc.name
+  policy_arn = aws_iam_policy.github_managed.arn
+}
+
+
+

@@ -1,9 +1,9 @@
 variable "GatewayEndpoints" {
   type = map(object({
-    service_name      = string           
-    vpc_endpoint_type = string              # "Gateway" (for S3/DynamoDB)
-  
-    route_table_ids   = optional(list(string), [])
+    service_name      = string
+    vpc_endpoint_type = string # "Gateway" (for S3/DynamoDB)
+
+    route_table_ids = optional(list(string), [])
   }))
 }
 
@@ -15,7 +15,7 @@ variable "InterfaceEndpoints" {
     security_group_ids  = list(string)
     private_dns_enabled = optional(bool, true)
   }))
- 
+
 }
 
 variable "vpc_id" {
@@ -23,11 +23,11 @@ variable "vpc_id" {
 
 }
 variable "region" {
-  type= string
+  type = string
 }
 #variable "route_table_ids" { type = list(string) }
 variable "internet_gateway_id" {
-  type= string
+  type = string
 }
 
 variable "public_subnet_ids" {
@@ -45,8 +45,8 @@ variable "public_subnets" {
 
 
 
-variable "ecr_sg_id"{
-  type = string 
+variable "ecr_sg_id" {
+  type = string
 }
 
 variable "aws_region" {

@@ -8,7 +8,7 @@ resource "aws_acm_certificate" "site" {
 
   domain_name       = var.domain_name
   validation_method = "DNS"
-   lifecycle {
+  lifecycle {
     create_before_destroy = true
   }
 }
@@ -21,7 +21,7 @@ resource "aws_route53_record" "cert_validation" {
       record = dvo.resource_record_value
     }
   }
- zone_id = var.zone
+  zone_id = var.zone
   name    = each.value.name
   type    = each.value.type
   ttl     = 60

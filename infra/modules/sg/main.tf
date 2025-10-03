@@ -3,7 +3,7 @@ resource "aws_security_group" "alb" {
   name        = "${var.sg_name}-alb-sg"
   vpc_id      = var.vpc_id
   description = "ALB SG"
-  
+
 }
 
 resource "aws_security_group_rule" "alb_ingress_http" {
@@ -43,7 +43,7 @@ resource "aws_security_group" "ecs_tasks" {
   name        = "${var.sg_name}-ecs-sg"
   vpc_id      = var.vpc_id
   description = "ECS tasks SG"
- 
+
 }
 
 resource "aws_security_group_rule" "ecs_ingress_from_alb" {
@@ -51,7 +51,7 @@ resource "aws_security_group_rule" "ecs_ingress_from_alb" {
   from_port                = 8080 # 8080 default
   to_port                  = 8080
   protocol                 = "tcp"
-  source_security_group_id = aws_security_group.alb.id   # <- ALB SG as source
+  source_security_group_id = aws_security_group.alb.id # <- ALB SG as source
   security_group_id        = aws_security_group.ecs_tasks.id
 }
 
@@ -68,28 +68,28 @@ resource "aws_security_group_rule" "ecs_egress_all" {
 #ecr sg 
 
 resource "aws_security_group" "ecr_sg" {
-  name = "${var.sg_name}-ecr-sg"
-  vpc_id = var.vpc_id
+  name        = "${var.sg_name}-ecr-sg"
+  vpc_id      = var.vpc_id
   description = "security group for ecr endpoints "
 
 }
 
 resource "aws_security_group_rule" "ecr_ingress" {
-  type ="ingress"
-  from_port = 443 
-  to_port = 443
-  protocol = "tcp"
+  type                     = "ingress"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
   source_security_group_id = aws_security_group.ecs_tasks.id
-  security_group_id = aws_security_group.ecr_sg.id 
+  security_group_id        = aws_security_group.ecr_sg.id
 
 
 }
 
 resource "aws_security_group_rule" "ecr_egress" {
-  type = "egress"
-  from_port = 0
-  to_port = 0 
-  protocol = "-1"
-  cidr_blocks = ["0.0.0.0/0"]
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.ecr_sg.id
-  }
+}

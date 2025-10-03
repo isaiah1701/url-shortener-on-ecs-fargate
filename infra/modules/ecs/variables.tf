@@ -77,5 +77,5 @@ variable "blue_tg_name" {
   type = string
 }
 variable "aws_region" {
-  type = string 
+  type = string
 }
