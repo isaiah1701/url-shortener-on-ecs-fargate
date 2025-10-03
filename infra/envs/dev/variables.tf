@@ -47,3 +47,17 @@ variable "cloudflare_api_token" {
 variable "domain_name" {
   type = string
 }
+variable "account_id" {
+  description = "AWS Account ID (12-digit number)"
+  type        = string
+}
+
+variable "github_owner" {
+  description = "GitHub username or organization name"
+  type        = string
+}
+
+variable "github_repo" {
+  description = "GitHub repository name (not the full URL)"
+  type        = string
+}

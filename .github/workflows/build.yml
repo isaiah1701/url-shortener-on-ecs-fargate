@@ -90,7 +90,7 @@ jobs:
           aws ecr get-login-password | docker login --username AWS --password-stdin \
             ${ECR_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
-      - name: Tag and push image to ECR
+      - name: Tag and push image to ECRu
         run: |
           ECR_REGISTRY="${ECR_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
           IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_SHA}"
