@@ -13,7 +13,7 @@ jobs:
   validate-terraform-and-docker:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write     # required for OIDC
+      id-token: write
       contents: read
       security-events: write
 
@@ -21,12 +21,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Load .env -> future steps' env + step outputs
       - name: Load .env
+        id: env
+        shell: bash
         run: |
           test -f .env || { echo ".env missing"; exit 1; }
-          set -a
-          source .env
-          set +a
+          set -a; source .env; set +a
+          # persist to later steps
+          grep -Ev '^\s*#' .env >> "$GITHUB_ENV"
+          # expose for 'with:' expressions
+          echo "AWS_REGION=$AWS_REGION" >> "$GITHUB_OUTPUT"
+          echo "ECR_ACCOUNT_ID=$ECR_ACCOUNT_ID" >> "$GITHUB_OUTPUT"
+          echo "ECR_REPOSITORY=$ECR_REPOSITORY" >> "$GITHUB_OUTPUT"
+          echo "IMAGE_NAME=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Set up Python for Checkov
         uses: actions/setup-python@v5
@@ -42,20 +50,10 @@ jobs:
         id: checkov
         continue-on-error: true
         run: |
-          echo "🔍 Running Checkov security scan..."
           if checkov -d . --framework terraform --output cli --quiet; then
             echo "checkov_failed=false" >> "$GITHUB_OUTPUT"
           else
-            echo "⚠️ Checkov found security issues - check output above"
             echo "checkov_failed=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Checkov results summary
-        run: |
-          if [[ "${{ steps.checkov.outputs.checkov_failed }}" == "true" ]]; then
-            echo "⚠️ CHECKOV FOUND ISSUES (continuing)"
-          else
-            echo "✅ Checkov passed"
           fi
 
       - name: Build Docker image for scanning
@@ -65,7 +63,7 @@ jobs:
       - name: Trivy image → SARIF (do not fail, just report)
         uses: aquasecurity/trivy-action@0.24.0
         with:
-          image-ref: ${{ env.IMAGE_NAME || 'urlshortener' }}:ci
+          image-ref: ${{ steps.env.outputs.IMAGE_NAME }}:ci
           format: sarif
           output: trivy-image.sarif
           exit-code: "0"
@@ -78,8 +76,8 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ env.ECR_ACCOUNT_ID }}:role/gha-oidc-simple
-          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: arn:aws:iam::${{ steps.env.outputs.ECR_ACCOUNT_ID }}:role/gha-oidc-simple
+          aws-region: ${{ steps.env.outputs.AWS_REGION }}
 
       - name: Ensure ECR repository exists
         run: |
@@ -97,7 +95,4 @@ jobs:
           IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_SHA}"
           docker tag "${IMAGE_NAME}:ci" "${IMAGE_URI}"
           docker push "${IMAGE_URI}"
-          echo "image_uri=${IMAGE_URI}" >> $GITHUB_OUTPUT
-
-
-
+          echo "image_uri=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
