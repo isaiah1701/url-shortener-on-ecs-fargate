@@ -58,7 +58,8 @@ jobs:
 
       - name: Build Docker image for scanning
         run: |
-          docker build -t "${IMAGE_NAME}:ci" .
+          docker build -t "${IMAGE_NAME}:latest" -f app/Dockerfile app
+
 
       - name: Trivy image → SARIF (do not fail, just report)
         uses: aquasecurity/trivy-action@0.24.0
