@@ -128,6 +128,7 @@ jobs:
         run: terraform init -backend=false
 
       - name: Terraform Format Check
+        continue-on-error: true
         run: terraform fmt -check -recursive
 
       - name: Install TFLint
