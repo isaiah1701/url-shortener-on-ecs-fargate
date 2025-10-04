@@ -117,7 +117,13 @@ jobs:
           docker push "${IMAGE_URI}"
           echo "image_uri=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
 
-      # Terraform validation and linting
+      # --- Terraform toolchain & checks ---
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.x
+          terraform_wrapper: false
+
       - name: Terraform Init
         run: terraform init -backend=false
 
