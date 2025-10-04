@@ -293,7 +293,7 @@ class BulkUrlResponse(BaseModel):
 @app.get("/healthz")
 def health():
     import time
-    return {"status": "testing push ", "ts": int(time.time())}
+    return {"status": "testing push 4 ", "ts": int(time.time())}
 
 # ---------- Single shorten ----------
 @app.post("/shorten")
