@@ -49,11 +49,11 @@ module "iam" {
   source             = "../../modules/iam"
   dynamodb_table_arn = module.dynamodb.table_arn
   iam_name           = local.iam_name
-  account_id = var.account_id
-  github_owner = var.github_owner
-  github_repo = var.github_repo
-  aws_region = var.region
-  ecr_repository = "${var.environment}-urlshortener"
+  account_id         = var.account_id
+  github_owner       = var.github_owner
+  github_repo        = var.github_repo
+  aws_region         = var.region
+  ecr_repository     = "${var.environment}-urlshortener"
 }
 
 module "sg" {

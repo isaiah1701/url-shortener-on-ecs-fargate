@@ -12,8 +12,7 @@ crash.log
 *.tfstate.*
 .terraform.lock.hcl
 crash.log
-*.tfvars
-*.auto.tfvars
+
 terraform.tfvarsnotes
 notes
 local

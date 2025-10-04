@@ -34,13 +34,13 @@ variable "iam_name" {
   description = "Base name/prefix (e.g. urlshortener-dev)"
   type        = string
 }
-variable "account_id"   {}
-variable "github_owner" {}   # e.g. "IsaiahMichael"
-variable "github_repo"  {}   # e.g. "ECSV2"
-variable "allowed_ref"  { default = "refs/heads/main" }  # which branch
+variable "account_id" {}
+variable "github_owner" {}                             # e.g. "IsaiahMichael"
+variable "github_repo" {}                              # e.g. "ECSV2"
+variable "allowed_ref" { default = "refs/heads/main" } # which branch
 variable "aws_region" {
-  
+
 }
 variable "ecr_repository" {
-  
+
 }

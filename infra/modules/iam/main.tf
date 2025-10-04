@@ -171,8 +171,8 @@ resource "aws_iam_role" "gha_oidc" {
 # --- Define a customer-managed policy (replace with real perms later) ---
 data "aws_iam_policy_document" "github_policy" {
   statement {
-    effect = "Allow"
-    actions = ["ecr:GetAuthorizationToken"]
+    effect    = "Allow"
+    actions   = ["ecr:GetAuthorizationToken"]
     resources = ["*"]
   }
 
