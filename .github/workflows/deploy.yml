@@ -101,7 +101,7 @@ jobs:
 
       - name: Terraform Init (infra/envs/<env>)
         working-directory: infra/envs/${{ steps.derive.outputs.env_name }}
-        run: terraform init -input=false
+        run: terraform init -input=false -backend-config=../../global/backend/backend.tfvars
 
       # Use explicit per-env tfvars file (dev.tfvars / staging.tfvars / prod.tfvars)
       - name: Terraform Apply (infra/envs/<env>)
