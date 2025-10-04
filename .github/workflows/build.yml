@@ -1,4 +1,4 @@
-name: Build 
+name: Build
 
 on:
   push:
@@ -21,18 +21,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Load .env -> future steps' env + step outputs
+      # Load .env for common vars (AWS_REGION, ECR_ACCOUNT_ID, IMAGE_NAME, etc.)
+      # We will IGNORE any ECR_REPOSITORY in .env and override it next.
       - name: Load .env
         id: env
         shell: bash
         run: |
           test -f .env || { echo ".env missing"; exit 1; }
           set -a; source .env; set +a
+          # Export everything except commented lines into the job env
           grep -Ev '^\s*#' .env >> "$GITHUB_ENV"
+          # Expose a few as step outputs if you need them later
           echo "AWS_REGION=$AWS_REGION" >> "$GITHUB_OUTPUT"
           echo "ECR_ACCOUNT_ID=$ECR_ACCOUNT_ID" >> "$GITHUB_OUTPUT"
-          echo "ECR_REPOSITORY=$ECR_REPOSITORY" >> "$GITHUB_OUTPUT"
           echo "IMAGE_NAME=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
+
+      # Derive deploy environment and ECR repository name from branch
+      - name: Derive env from branch -> ECR repo
+        id: branch
+        shell: bash
+        run: |
+          BRANCH="${GITHUB_REF_NAME}"
+          case "$BRANCH" in
+            main)    DEPLOY_ENV="prod";    REPO="prod-urlshortener" ;;
+            staging) DEPLOY_ENV="staging"; REPO="staging-urlshortener" ;;
+            dev)     DEPLOY_ENV="dev";     REPO="dev-urlshortener" ;;
+            *)       DEPLOY_ENV="dev";     REPO="dev-urlshortener" ;;
+          esac
+          echo "DEPLOY_ENV=$DEPLOY_ENV" >> "$GITHUB_ENV"
+          echo "ECR_REPOSITORY=$REPO"    >> "$GITHUB_ENV"
+          echo "DEPLOY_ENV=$DEPLOY_ENV" >> "$GITHUB_OUTPUT"
+          echo "ECR_REPOSITORY=$REPO"   >> "$GITHUB_OUTPUT"
+          echo "Using branch '$BRANCH' -> env='$DEPLOY_ENV', repo='$REPO'"
 
       - name: Set up Python for Checkov
         uses: actions/setup-python@v5
@@ -77,6 +97,7 @@ jobs:
           role-to-assume: arn:aws:iam::${{ steps.env.outputs.ECR_ACCOUNT_ID }}:role/gha-oidc-simple
           aws-region: ${{ steps.env.outputs.AWS_REGION }}
 
+      # Optional: keep while you migrate infra creation to Terraform
       - name: Ensure ECR repository exists
         run: |
           aws ecr describe-repositories --repository-names "${ECR_REPOSITORY}" >/dev/null 2>&1 || \
@@ -88,6 +109,7 @@ jobs:
             ${ECR_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
       - name: Tag and push image to ECR
+        id: push
         run: |
           ECR_REGISTRY="${ECR_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
           IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_SHA}"
