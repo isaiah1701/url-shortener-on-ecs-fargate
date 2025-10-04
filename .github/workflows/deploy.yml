@@ -19,83 +19,91 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the exact commit that triggered Build
-      - name: Checkout
+      - name: Checkout exact commit from Build
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
 
-      # Decide env from branch -> dev|staging|prod
-      - name: Derive env from branch
+      - name: Derive env + ECR repo from branch
         id: derive
         shell: bash
         run: |
           BRANCH="${{ github.event.workflow_run.head_branch }}"
           case "$BRANCH" in
-            dev)     ENV_NAME=dev ;   ECR_REPO=dev-urlshortener ;;
-            staging) ENV_NAME=staging; ECR_REPO=staging-urlshortener ;;
-            main)    ENV_NAME=prod ;  ECR_REPO=prod-urlshortener ;;
+            dev)     ENV_NAME=dev;     ECR_REPO=dev-urlshortener;     TFVARS=dev.tfvars ;;
+            staging) ENV_NAME=staging; ECR_REPO=staging-urlshortener; TFVARS=staging.tfvars ;;
+            main)    ENV_NAME=prod;    ECR_REPO=prod-urlshortener;    TFVARS=prod.tfvars ;;
             *) echo "::error ::Unsupported branch ${BRANCH}"; exit 1 ;;
           esac
-          echo "env_name=${ENV_NAME}"   >> "$GITHUB_OUTPUT"
-          echo "ecr_repo=${ECR_REPO}"   >> "$GITHUB_OUTPUT"
-          echo "branch=${BRANCH}"       >> "$GITHUB_OUTPUT"
+          echo "env_name=${ENV_NAME}" >> "$GITHUB_OUTPUT"
+          echo "ecr_repo=${ECR_REPO}" >> "$GITHUB_OUTPUT"
+          echo "tfvars=${TFVARS}"     >> "$GITHUB_OUTPUT"
 
-      # Load root .env (for AWS_REGION, ECR_ACCOUNT_ID, IMAGE_NAME, etc.)
-      - name: Load .env
+      - name: Load .env (AWS account/region/image name)
         id: loadenv
         shell: bash
         run: |
           test -f .env || { echo "::error::.env missing"; exit 1; }
           set -a; source .env; set +a
-          grep -Ev '^\s*#' .env >> "$GITHUB_ENV"
           echo "AWS_REGION=${AWS_REGION}"         >> "$GITHUB_OUTPUT"
           echo "ECR_ACCOUNT_ID=${ECR_ACCOUNT_ID}" >> "$GITHUB_OUTPUT"
           echo "IMAGE_NAME=${IMAGE_NAME}"         >> "$GITHUB_OUTPUT"
 
-      # Configure AWS with a single OIDC role
       - name: Configure AWS (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ env.ROLE_ARN || format('arn:aws:iam::{0}:role/gha-oidc-simple', steps.loadenv.outputs.ECR_ACCOUNT_ID) }}
+          role-to-assume: arn:aws:iam::${{ steps.loadenv.outputs.ECR_ACCOUNT_ID }}:role/gha-oidc-simple
           aws-region: ${{ steps.loadenv.outputs.AWS_REGION }}
 
-      # Compute the image URI produced by Build (tagged with head_sha)
-      - name: Compute image URI
-        id: image
-        shell: bash
-        env:
-          AWS_REGION:     ${{ steps.loadenv.outputs.AWS_REGION }}
-          ECR_ACCOUNT_ID: ${{ steps.loadenv.outputs.ECR_ACCOUNT_ID }}
-          ECR_REPO:       ${{ steps.derive.outputs.ecr_repo }}
-        run: |
-          SHA="${{ github.event.workflow_run.head_sha }}"
-          ECR_REG="${ECR_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-          IMAGE_URI="${ECR_REG}/${ECR_REPO}:${SHA}"
-          echo "image_uri=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
-          echo "Using image ${IMAGE_URI}"
-
-      # (Optional) Ensure repo exists — harmless if already created by infra
-      - name: Ensure ECR repository exists
+      # Build & push happen here (not in Build)
+      - name: Ensure ECR repository exists (optional)
         env:
           ECR_REPO: ${{ steps.derive.outputs.ecr_repo }}
         run: |
           aws ecr describe-repositories --repository-names "${ECR_REPO}" >/dev/null 2>&1 || \
           aws ecr create-repository    --repository-name   "${ECR_REPO}" >/dev/null
 
-      # --- Terraform toolchain & deploy ---
+      - name: Login to ECR
+        env:
+          AWS_REGION:     ${{ steps.loadenv.outputs.AWS_REGION }}
+          ECR_ACCOUNT_ID: ${{ steps.loadenv.outputs.ECR_ACCOUNT_ID }}
+        run: |
+          aws ecr get-login-password \
+            | docker login --username AWS --password-stdin \
+              ${ECR_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+
+      - name: Build image (same commit as Build)
+        env:
+          IMAGE_NAME: ${{ steps.loadenv.outputs.IMAGE_NAME }}
+        run: |
+          docker build -t "${IMAGE_NAME}:latest" -f app/Dockerfile app
+
+      - name: Tag & push image (tag = head_sha)
+        id: pushimg
+        env:
+          AWS_REGION:     ${{ steps.loadenv.outputs.AWS_REGION }}
+          ECR_ACCOUNT_ID: ${{ steps.loadenv.outputs.ECR_ACCOUNT_ID }}
+          ECR_REPO:       ${{ steps.derive.outputs.ecr_repo }}
+          IMAGE_NAME:     ${{ steps.loadenv.outputs.IMAGE_NAME }}
+        run: |
+          SHA="${{ github.event.workflow_run.head_sha }}"
+          ECR_REG="${ECR_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+          IMAGE_URI="${ECR_REG}/${ECR_REPO}:${SHA}"
+          docker tag "${IMAGE_NAME}:latest" "${IMAGE_URI}"
+          docker push "${IMAGE_URI}"
+          echo "image_uri=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.x
           terraform_wrapper: false
 
-      - name: Terraform Init
+      - name: Terraform Init (infra/envs/<env>)
         working-directory: infra/envs/${{ steps.derive.outputs.env_name }}
         run: terraform init -input=false
 
-      - name: Terraform Apply
+      # Use explicit per-env tfvars file (dev.tfvars / staging.tfvars / prod.tfvars)
+      - name: Terraform Apply (infra/envs/<env>)
         working-directory: infra/envs/${{ steps.derive.outputs.env_name }}
-        env:
-          TF_VAR_image_uri: ${{ steps.image.outputs.image_uri }}
-        run: terraform apply -input=false -auto-approve
+        run: terraform apply -input=false -auto-approve -var-file=${{ steps.derive.outputs.tfvars }}
