@@ -67,29 +67,29 @@ resource "aws_security_group_rule" "ecs_egress_all" {
 
 #ecr sg 
 
-resource "aws_security_group" "ecr_sg" {
+resource "aws_security_group" "interface_sg" {
   name        = "${var.sg_name}-ecr-sg"
   vpc_id      = var.vpc_id
   description = "security group for ecr endpoints "
 
 }
 
-resource "aws_security_group_rule" "ecr_ingress" {
+resource "aws_security_group_rule" "interface_ingress" {
   type                     = "ingress"
   from_port                = 443
   to_port                  = 443
   protocol                 = "tcp"
   source_security_group_id = aws_security_group.ecs_tasks.id
-  security_group_id        = aws_security_group.ecr_sg.id
+  security_group_id        = aws_security_group.interface_sg.id
 
 
 }
 
-resource "aws_security_group_rule" "ecr_egress" {
+resource "aws_security_group_rule" "interface_egress" {
   type              = "egress"
   from_port         = 0
   to_port           = 0
   protocol          = "-1"
   cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = aws_security_group.ecr_sg.id
+  security_group_id = aws_security_group.interface_sg.id
 }

@@ -1,4 +1,4 @@
-name: Build pipeline
+name: Build 
 
 on:
   push:
@@ -28,9 +28,7 @@ jobs:
         run: |
           test -f .env || { echo ".env missing"; exit 1; }
           set -a; source .env; set +a
-          # persist to later steps
           grep -Ev '^\s*#' .env >> "$GITHUB_ENV"
-          # expose for 'with:' expressions
           echo "AWS_REGION=$AWS_REGION" >> "$GITHUB_OUTPUT"
           echo "ECR_ACCOUNT_ID=$ECR_ACCOUNT_ID" >> "$GITHUB_OUTPUT"
           echo "ECR_REPOSITORY=$ECR_REPOSITORY" >> "$GITHUB_OUTPUT"
@@ -59,7 +57,6 @@ jobs:
       - name: Build Docker image for scanning
         run: |
           docker build -t "${IMAGE_NAME}:latest" -f app/Dockerfile app
-
 
       - name: Trivy image → SARIF (do not fail, just report)
         uses: aquasecurity/trivy-action@0.24.0
@@ -90,10 +87,28 @@ jobs:
           aws ecr get-login-password | docker login --username AWS --password-stdin \
             ${ECR_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
-      - name: Tag and push image to ECRu
+      - name: Tag and push image to ECR
         run: |
           ECR_REGISTRY="${ECR_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
           IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_SHA}"
           docker tag "${IMAGE_NAME}:latest" "${IMAGE_URI}"
           docker push "${IMAGE_URI}"
           echo "image_uri=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
+
+      # Terraform validation and linting
+      - name: Terraform Init
+        run: terraform init -backend=false
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Install TFLint
+        run: |
+          curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+          tflint --init
+
+      - name: Run TFLint
+        run: tflint
+
+      - name: Validate Terraform
+        run: terraform validate
