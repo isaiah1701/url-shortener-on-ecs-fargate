@@ -23,14 +23,14 @@ It builds upon the original CoderCo ECS challenge and extends it into a **secure
 ## 🖼️ Key Components
 
 ### 🔹 Home Screen
-![Home Screen](app/images/homescreen.png)
+![Home Screen](images/homescreen.png)
 
 Simple FastAPI UI that accepts a URL, shortens it, and stores the mapping in DynamoDB.
 
 ---
 
 ### 🔹 OIDC Pipeline Integration
-![OIDC](app/images/oidc.png)
+![OIDC](images/oidc.png)
 
 GitHub Actions authenticates directly with AWS via OIDC — no static credentials.  
 This ensures **secure, short-lived tokens** for Terraform plan/apply and image deployment.
@@ -38,7 +38,7 @@ This ensures **secure, short-lived tokens** for Terraform plan/apply and image d
 ---
 
 ### 🔹 CodeDeploy Blue/Green
-![CodeDeploy](app/images/codeDeploy.png)
+![CodeDeploy](images/codeDeploy.png)
 
 Traffic between blue and green target groups is shifted automatically after successful health checks, ensuring **zero-downtime deployments**.
 
@@ -46,7 +46,7 @@ Traffic between blue and green target groups is shifted automatically after succ
 
 ### 🔹 WAF Configuration
 ![WAF](app/images/waf.png)
-![WAF Firewall](app/images/wafFirewall.png)
+![WAF Firewall](images/wafFirewall.png)
 
 AWS WAF protects the ALB from malicious patterns (SQL i, XSS, bad bots).  
 Custom rules and rate limiting policies are defined through Terraform.
@@ -54,7 +54,7 @@ Custom rules and rate limiting policies are defined through Terraform.
 ---
 
 ### 🔹 Private Endpoints
-![Endpoints](app/images/endpoints.png)
+![Endpoints](images/endpoints.png)
 
 VPC Interface Endpoints for CloudWatch, ECR, and Logs keep all ECS traffic internal to AWS.  
 No data leaves the VPC, improving security and latency.
