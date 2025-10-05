@@ -78,8 +78,8 @@ resource "aws_ecs_service" "this" {
   lifecycle {
     ignore_changes = [
       load_balancer,
-      task_definition, # ignore new task_def arns from image pushes
-      desired_count    # ignore changes if autoscaling adjusts replicas
+      task_definition, 
+      desired_count   
     ]
   }
 }

@@ -29,7 +29,7 @@ resource "aws_iam_role" "task" {
   })
 }
 
-# Least-privilege DynamoDB access for your app
+
 resource "aws_iam_role_policy" "task_dynamodb" {
   name = "${var.iam_name}-task-dynamodb"
   role = aws_iam_role.task.id

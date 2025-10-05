@@ -1,4 +1,4 @@
-# Lambda function to handle ECR events and trigger CodeDeploy
+
 resource "aws_lambda_function" "trigger_deploy" {
   filename         = data.archive_file.lambda_zip.output_path
   function_name    = "ecr-trigger-codedeploy"
@@ -21,7 +21,6 @@ resource "aws_lambda_function" "trigger_deploy" {
   }
 }
 
-# IAM role for Lambda
 resource "aws_iam_role" "lambda_role" {
   name = "ecr-trigger-lambda-role"
 
@@ -39,7 +38,6 @@ resource "aws_iam_role" "lambda_role" {
   })
 }
 
-# IAM policy for Lambda to trigger CodeDeploy
 resource "aws_iam_role_policy" "lambda_policy" {
   name = "ecr-trigger-codedeploy-perms"
   role = aws_iam_role.lambda_role.id
@@ -65,7 +63,6 @@ resource "aws_iam_role_policy" "lambda_policy" {
         Resource = "*"
       },
 
-      # NEW: allow Lambda to pass the ECS roles when registering the task def
       {
         Effect = "Allow",
         Action = "iam:PassRole",
@@ -95,7 +92,6 @@ resource "aws_iam_role_policy" "lambda_policy" {
 }
 
 
-# EventBridge rule to watch ECR
 resource "aws_cloudwatch_event_rule" "ecr_push" {
   name        = "capture-ecr-push"
   description = "Capture ECR image pushes"
@@ -279,7 +275,7 @@ resource "aws_iam_role_policy" "eventbridge_policy" {
   })
 }
 
-# Remove the EventBridge components as they're not needed for manual deployments
+
 
 resource "aws_codedeploy_deployment_group" "codedeploy" {
   app_name               = aws_codedeploy_app.this.name
