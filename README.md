@@ -60,96 +60,39 @@ VPC Interface Endpoints for CloudWatch, ECR, and Logs keep all ECS traffic inter
 No data leaves the VPC, improving security and latency.
 
 ---
-## 🚀 Deployment Flow Overview
+## 🚀 CI/CD Deployment Summary — URL Shortener on ECS Fargate
 
-The entire deployment flow from **commit → production** is fully automated through **GitHub Actions**, **ECR**, **EventBridge**, **Lambda**, and **CodeDeploy** — with secure authentication using **OIDC** (no stored AWS keys).
-
----
-
-### 🧩 Step 1 — Developer Commit → GitHub Actions Trigger
-- Developer commits code to any branch (`dev`, `staging`, or `main`).
-- GitHub Actions triggers the **Build Workflow** automatically.
-- Workflow loads environment variables, runs security and format checks, builds the Docker image, and authenticates to AWS via OIDC.
-
-**Key checks and actions:**
-- Load `.env` variables  
-- Derive deploy environment from branch  
-- Run **Checkov**, **TFLint**, and **Terraform validate**  
-- Build and scan Docker image with **Trivy**  
-- Authenticate securely to AWS via **OIDC**  
+This project implements a **fully automated CI/CD pipeline** using **GitHub Actions**, **ECR**, **EventBridge**, **Lambda**, and **CodeDeploy** to deploy a containerized FastAPI application onto **ECS Fargate** with **Blue/Green deployments** and zero downtime.
 
 ---
 
-### 🐳 Step 2 — Build & Push to ECR
-After validation:
-- Docker builds the application image locally on the runner.
-- The image is pushed to **Amazon ECR**, tagged as `latest`.
+### 🔄 End-to-End Flow
 
-```bash
-docker build -t $IMAGE_NAME:latest -f app/Dockerfile app
-docker push $ECR_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:latest
-⚡ Step 3 — EventBridge → Lambda Trigger
+1. **Developer Commit** → A push to `dev`, `staging`, or `main` triggers the GitHub Actions workflow.  
+2. **Build Stage** → GitHub Actions builds the Docker image, runs static analysis (**Checkov**, **TFLint**, **Trivy**), validates Terraform, and authenticates via **OIDC** (no stored AWS keys).  
+3. **Push to ECR** → The Docker image is tagged and pushed to **Amazon ECR**.  
+4. **EventBridge Trigger** → Detects the ECR image push and triggers a **Lambda** function.  
+5. **Lambda Automation** → Lambda registers a new ECS task definition and triggers **CodeDeploy**.  
+6. **Blue/Green Deployment** → CodeDeploy shifts traffic gradually from **blue** to **green** using ALB listeners.  
+7. **Validation & Cutover** → Health checks confirm green stability, then blue tasks are terminated automatically.
 
-An EventBridge rule monitors the ECR repository for image push events (action-type: PUSH).
+---
 
-When a new image is pushed:
+### 📊 Summary Table
 
-EventBridge triggers a Lambda function (ecr-trigger-codedeploy)
+| Stage | Trigger | AWS / Service | Action |
+|-------|----------|----------------|--------|
+| 🧑‍💻 Developer commit | Git push | **GitHub Actions** | Lint, scan, and build Docker image |
+| 🐳 Build & Push | CI workflow | **Docker + ECR** | Build and push image to ECR |
+| ⚡ ECR push event | ECR image upload | **EventBridge** | Invoke Lambda trigger |
+| 🧠 Automation | EventBridge event | **Lambda** | Register new ECS task + trigger CodeDeploy |
+| 🚀 Deployment | Lambda output | **CodeDeploy** | Perform Blue/Green deployment |
+| ✅ Validation | Health checks | **ECS Fargate + ALB** | Confirm healthy targets and cutover traffic |
 
-The Lambda automates the deployment lifecycle.
+---
 
-Lambda responsibilities:
-
-Fetch current ECS task definition
-
-Replace the image with the new ECR tag
-
-Register a new ECS task definition revision
-
-Trigger CodeDeploy with the new revision and AppSpec content
-
-This ensures that every successful image push automatically triggers a new ECS deployment — no manual steps required.
-
-🚀 Step 4 — CodeDeploy → Blue/Green Rollout
-
-CodeDeploy coordinates a blue/green deployment using the ECS service and ALB listener.
-
-The blue target group serves live production traffic.
-
-The green target group runs the new revision in parallel.
-
-Traffic shifts 10% every minute, verifying health checks through ALB.
-
-If the green environment passes all checks, it becomes the new production.
-
-If a failure occurs:
-
-CodeDeploy automatically rolls back to the previous stable revision.
-
-🌐 Step 5 — Traffic Shift & Health Validation
-
-Once CodeDeploy confirms the green target group is healthy:
-
-Traffic fully switches from blue → green
-
-Blue tasks are terminated 5 minutes later
-
-Logs and metrics are streamed to CloudWatch
-
-Health checks:
-
-HTTP path /healthz
-
-Status codes 200–399
-
-2 consecutive successes mark the target as healthy
-| Stage                  | Trigger      | Service        | Action                 |
-| ---------------------- | ------------ | -------------- | ---------------------- |
-| 🧑‍💻 Developer commit | Git push     | GitHub Actions | Build + validate       |
-| 🐳 Build image         | Workflow job | Docker + ECR   | Build & push image     |
-| ⚡ ECR push event       | EventBridge  | Lambda         | Register new ECS task  |
-| 🚀 Deployment          | Lambda       | CodeDeploy     | Blue/Green rollout     |
-| ✅ Validation           | CodeDeploy   | ECS Fargate    | Health check + cutover |
+**Result:**  
+A secure, automated, and production-ready pipeline that continuously delivers container updates to ECS with zero downtime, full rollback capability, and Terraform-managed infrastructure.
 
 ---
 
