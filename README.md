@@ -140,6 +140,24 @@ infra/
 | Security | AWS WAF + Private VPC Endpoints |
 | Monitoring | CloudWatch Logs + Dashboards |
 
+
+
+---
+
+### ⚖️ Tradeoffs & Decisions
+
+- **VPC Endpoints over NAT**  
+  Chosen for cost and security — avoids NAT gateway charges and keeps traffic within the VPC.  
+  ❌ Slightly more setup per service.
+
+- **OIDC over Long-Lived Keys**  
+  Secure, short-lived credentials tied to GitHub Actions.  
+  ❌ Harder to set up, but removes secret management entirely.
+
+- **CodeDeploy over Direct ECS Updates**  
+  Enables safe blue/green deployments with health checks and rollback.  
+  ❌ Adds complexity but ensures zero-downtime and safer deploys.
+
 ---
 
 ## 🧭 Next Steps
