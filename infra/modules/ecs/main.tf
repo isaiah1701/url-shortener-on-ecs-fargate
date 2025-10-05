@@ -47,10 +47,6 @@ resource "aws_ecs_task_definition" "this" {
     }
   ])
 }
-data "aws_lb_target_group" "blue" {
-  name = var.blue_tg_name
-}
-
 
 resource "aws_ecs_service" "this" {
   name            = "${var.ecs_name}-service"
@@ -70,7 +66,7 @@ resource "aws_ecs_service" "this" {
   }
 
   load_balancer {
-    target_group_arn = data.aws_lb_target_group.blue.arn
+    target_group_arn = var.blue_tg_arn
     container_name   = var.ecs_name
     container_port   = var.container_port
   }

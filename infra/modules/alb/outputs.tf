@@ -29,15 +29,14 @@ output "green_tg_name" {
 }
 
 # Optional but handy if any module needs ARNs instead of names
-output "blue_tg_arn" {
-  description = "ARN of the blue target group"
-  value       = aws_lb_target_group.blue.arn
+output "blue_target_group_arn" {
+  value = aws_lb_target_group.blue.arn
 }
 
-output "green_tg_arn" {
-  description = "ARN of the green target group"
-  value       = aws_lb_target_group.green.arn
+output "green_target_group_arn" {
+  value = aws_lb_target_group.green.arn
 }
+
 output "alb_zone_id" {
   value = aws_lb.this.zone_id
 }

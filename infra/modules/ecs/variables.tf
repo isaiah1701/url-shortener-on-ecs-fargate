@@ -79,3 +79,4 @@ variable "blue_tg_name" {
 variable "aws_region" {
   type = string
 }
+variable "blue_tg_arn" {}

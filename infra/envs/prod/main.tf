@@ -4,7 +4,7 @@ module "alb" {
   public_subnet_ids = module.vpc.public_subnet_ids
   certificate_arn   = module.acm.validated_certificate_arn
   security_group_id = module.sg.alb_sg_id
-
+  environment = var.environment
 }
 module "ecr" {
   source = "../../modules/ecr"
@@ -36,6 +36,7 @@ module "ecs" {
   vpc_id             = module.vpc.vpc_id
   blue_tg_name       = module.alb.blue_tg_name
   aws_region         = var.region
+  blue_tg_arn  = module.alb.blue_target_group_arn
 
 
 

@@ -53,3 +53,8 @@ variable "security_group_id" {
   description = "Security group ID to attach to the ALB"
   type        = string
 }
+
+variable "environment" {
+  type = string 
+  
+}

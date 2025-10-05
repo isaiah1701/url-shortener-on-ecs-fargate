@@ -15,9 +15,8 @@ resource "aws_lb" "this" {
 
 
 }
-
 resource "aws_lb_target_group" "blue" {
-  name_prefix = "${substr(var.alb_name, 0, 12)}-b-"
+  name        = "${var.alb_name}-blue"
   port        = var.app_port
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -33,10 +32,19 @@ resource "aws_lb_target_group" "blue" {
   }
 
   deregistration_delay = 10
+
+ lifecycle {
+   prevent_destroy = true
+  }
+
+  tags = {
+    Environment = var.environment
+    Name        = "${var.alb_name}-blue"
+  }
 }
 
 resource "aws_lb_target_group" "green" {
-  name_prefix = "${substr(var.alb_name, 0, 12)}-g-"
+  name        = "${var.alb_name}-green"
   port        = var.app_port
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -52,7 +60,17 @@ resource "aws_lb_target_group" "green" {
   }
 
   deregistration_delay = 10
+
+  lifecycle {
+    prevent_destroy = true
+  }
+
+  tags = {
+    Environment = var.environment
+    Name        = "${var.alb_name}-green"
+  }
 }
+
 # 80 -> 443 redirect
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.this.arn
