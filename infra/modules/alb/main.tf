@@ -94,8 +94,14 @@ resource "aws_lb_listener" "https" {
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
   certificate_arn   = var.certificate_arn
 
+  # Initial action — CodeDeploy will manage this later
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.blue.arn
+  }
+
+  lifecycle {
+    # Prevent Terraform from overwriting CodeDeploy’s traffic switch
+    ignore_changes = [default_action]
   }
 }
