@@ -45,7 +45,7 @@ Traffic between blue and green target groups is shifted automatically after succ
 ---
 
 ### 🔹 WAF Configuration
-![WAF](app/images/waf.png)
+![WAF](images/waf.png)
 ![WAF Firewall](images/wafFirewall.png)
 
 AWS WAF protects the ALB from malicious patterns (SQL i, XSS, bad bots).  
