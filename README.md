@@ -1,36 +1,132 @@
-# url-shortener-on-ecs-fargate
+# 🚀 URL Shortener on ECS Fargate — Production-Grade Deployment (ECS v2)
 
-## Project Overview
+This project is a **production-ready AWS architecture** for deploying a containerized Python URL shortener using **ECS Fargate**, **Terraform**, and **CI/CD with GitHub OIDC → CodeDeploy**.
 
-This project is an upcoming cloud-native application designed for deployment on AWS ECS Fargate. It leverages Docker for containerization, Python for backend logic, and Terraform for infrastructure as code. The structure supports scalable deployment, modular infrastructure, and streamlined local development.
-
-### Directory Structure & Details
-
-- **app/**  
-	Contains the main application code and dependencies.
-	- `Dockerfile`: Container image definition.
-	- `requirements.txt`: Python dependencies.
-	- `src/`: Python source code (`main.py`, `ddb.py`).
-	- `tests/`: Unit tests.
-
-- **infra/**  
-	Infrastructure as code using Terraform.
-	- `envs/`: Environment-specific configs (dev, prod, staging).
-	- `global/`: Shared infrastructure (e.g., backend state).
-	- `modules/`: Reusable Terraform modules for AWS resources (VPC, ECS, ALB, IAM, DynamoDB, etc.).
-
-- **local/**  
-	Local development resources.
-	- `docker-compose.yml`: Local multi-container setup.
-	- `makefile`: Automation scripts.
-	- `volume/`: Caches, logs, temporary files.
-
-- **README.md**  
-	Project documentation and instructions.
+It builds upon the original CoderCo ECS challenge and extends it into a **secure, automated, multi-environment stack** with **blue/green deployments**, **WAF protection**, and **CloudWatch monitoring**.
 
 ---
 
-## Upcoming Status
+## 🏗️ Architecture Overview
 
-This project is currently in development and is an upcoming solution. It is being structured for robust cloud deployment, modular infrastructure management, and easy local development/testing. Stay tuned for more updates as features and documentation are finalized.
+**Stack highlights**
+- **ECS Fargate** – serverless compute for containerized workloads  
+- **ALB + Blue/Green Target Groups** – safe deployment switching via CodeDeploy  
+- **WAF (Web ACL)** – filters malicious traffic before reaching the ALB  
+- **Route 53 + ACM** – custom domain with automatic TLS  
+- **ECR** – Docker image registry  
+- **Terraform Modules** – reusable IaC for VPC, ALB, ECS, IAM, WAF, CloudWatch  
+- **GitHub OIDC → CodeDeploy** – secure CI/CD pipeline (no long-lived AWS keys)  
+- **Multi-Environment Setup** – `dev`, `staging`, and `prod` folders using a shared S3 + DynamoDB backend  
+
+---
+
+## 🖼️ Key Components
+
+### 🔹 Home Screen
+![Home Screen](app/images/homescreen.png)
+
+Simple FastAPI UI that accepts a URL, shortens it, and stores the mapping in DynamoDB.
+
+---
+
+### 🔹 OIDC Pipeline Integration
+![OIDC](app/images/oidc.png)
+
+GitHub Actions authenticates directly with AWS via OIDC — no static credentials.  
+This ensures **secure, short-lived tokens** for Terraform plan/apply and image deployment.
+
+---
+
+### 🔹 CodeDeploy Blue/Green
+![CodeDeploy](app/images/codeDeploy.png)
+
+Traffic between blue and green target groups is shifted automatically after successful health checks, ensuring **zero-downtime deployments**.
+
+---
+
+### 🔹 WAF Configuration
+![WAF](app/images/waf.png)
+![WAF Firewall](app/images/wafFirewall.png)
+
+AWS WAF protects the ALB from malicious patterns (SQL i, XSS, bad bots).  
+Custom rules and rate limiting policies are defined through Terraform.
+
+---
+
+### 🔹 Private Endpoints
+![Endpoints](app/images/endpoints.png)
+
+VPC Interface Endpoints for CloudWatch, ECR, and Logs keep all ECS traffic internal to AWS.  
+No data leaves the VPC, improving security and latency.
+
+---
+
+## ⚙️ Deployment Flow
+
+1. **Developer commits to main**
+   - Triggers GitHub Actions build workflow
+2. **Build**
+   - Docker image built → ECR push
+3. **Deploy**
+   - Terraform apply (via OIDC)
+   - CodeDeploy blue/green rollout
+4. **Traffic shift**
+   - Green TG becomes primary if health checks pass
+
+---
+
+## 🧠 Key Learnings
+
+- Implementing **secure CI/CD without AWS keys**
+- Managing **multi-env Terraform state** (S3 + DynamoDB)
+- Designing **rollback-ready deployments** via CodeDeploy
+- Integrating **AWS WAF + CloudWatch dashboards** for visibility
+- Troubleshooting ECS Fargate target health and listener routing
+
+---
+
+## 📂 Repository Structure
+
+app/ # FastAPI app
+infra/
+├── modules/ # Reusable Terraform modules (vpc, ecs, alb, waf, etc.)
+├── envs/ # dev / staging / prod configurations
+└── global/ # Backend (S3+DynamoDB) state setup
+.github/workflows/ # CI/CD pipelines (Build + Deploy)
+
+
+---
+
+## 🧩 Tech Stack
+
+| Category | Tools |
+|-----------|-------|
+| Cloud | AWS (ECS Fargate, ECR, ALB, WAF, Route 53, ACM, CloudWatch) |
+| IaC | Terraform v1.9+ |
+| CI/CD | GitHub Actions + OIDC → CodeDeploy |
+| Language | Python (FastAPI) |
+| Security | AWS WAF + Private VPC Endpoints |
+| Monitoring | CloudWatch Logs + Dashboards |
+
+---
+
+## 🧭 Next Steps
+
+- Add **CloudWatch Alarms → SNS notifications**
+- Introduce **Checkov / Tfsec** for IaC security
+- Automate **rollback on 5xx error threshold**
+- Publish as a **Terraform module template**
+
+---
+
+### 🏁 Outcome
+
+A fully automated, production-grade **ECS Fargate deployment** demonstrating:
+- Infrastructure as Code discipline  
+- Secure OIDC CI/CD integration  
+- Blue/green release management  
+- Layer-7 security via WAF  
+- Cloud-native observability and resilience  
+
+---
 

@@ -87,7 +87,6 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-# HTTPS listener to the app target group
 resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.this.arn
   port              = 443
