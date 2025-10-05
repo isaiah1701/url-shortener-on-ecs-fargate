@@ -24,7 +24,7 @@ It builds upon the original CoderCo ECS challenge and extends it into a **secure
 
 ### 🔷 The App
 
-📽️ [Watch a 1-minute demo](images/appvid.mp4) of the FastAPI-based app in action.
+📽️ [Watch a 1-minute demo](images/appVid2.mp4) of the FastAPI-based app in action.
 
 > A simple FastAPI UI that accepts a URL, shortens it, and stores the mapping in DynamoDB. Designed to demonstrate secure and production-ready container deployment using ECS Fargate, ALB, CodeDeploy blue/green, and WAF.
 
