@@ -24,7 +24,7 @@ It builds upon the original CoderCo ECS challenge and extends it into a **secure
 
 ### Demo Video
 
-📽️ [Watch a short demo](https://github.com/user-attachments/assets/4c802809-0b03-4094-83d3-e850b3400f34/appVid2.mp4) of the FastAPI-based app in action.
+
 
 
 https://github.com/user-attachments/assets/bc4f4f55-18e5-496b-b660-bc25d9e33571
