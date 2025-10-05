@@ -24,7 +24,7 @@ It builds upon the original CoderCo ECS challenge and extends it into a **secure
 
 ### 🔷 The App
 
-📽️ [Watch a short demo](https://github.com/isaiah1701/url-shortener-on-ecs-fargate/issues/1#issue-3484763006) of the FastAPI-based app in action.
+📽️ [Watch a short demo](https://private-user-images.githubusercontent.com/200955694/497549715-4c111287-f3a6-405a-b9a4-d2b0c88f09a1.mp4?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTk2Njc3NjYsIm5iZiI6MTc1OTY2NzQ2NiwicGF0aCI6Ii8yMDA5NTU2OTQvNDk3NTQ5NzE1LTRjMTExMjg3LWYzYTYtNDA1YS1iOWE0LWQyYjBjODhmMDlhMS5tcDQ_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjUxMDA1JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI1MTAwNVQxMjMxMDZaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT0yNTA5OTE5MDRmYjU3MDI4YjE2OGUzMGRiM2YxNjY1MDkyNGMwY2E5ODc2OGVlYjkwMzBmOGNhYjk5OTQxNTZhJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.ybKP7M2TrbU-8zYU7q5dKpN77B6oGoSV9XuDvP6mm7o) of the FastAPI-based app in action.
 
 > A simple FastAPI UI that accepts a URL, shortens it, and stores the mapping in DynamoDB. Designed to demonstrate secure and production-ready container deployment using ECS Fargate, ALB, CodeDeploy blue/green, and WAF.
 
