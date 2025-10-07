@@ -1,4 +1,4 @@
-# 🚀 URL Shortener on ECS Fargate — Production-Grade Deployment (ECS v2)
+#  URL Shortener on ECS Fargate — Production-Grade Deployment (ECS v2)
 
 This project is a **production-ready AWS architecture** for deploying a containerized Python URL shortener using **ECS Fargate**, **Terraform**, and **CI/CD with GitHub OIDC → CodeDeploy**.
 
@@ -6,7 +6,7 @@ It builds upon the original CoderCo ECS challenge and extends it into a **secure
 
 ---
 
-## 🏗️ Architecture Overview
+##  Architecture Overview
 
 **Stack highlights**
 - **ECS Fargate** – serverless compute for containerized workloads  
@@ -20,7 +20,7 @@ It builds upon the original CoderCo ECS challenge and extends it into a **secure
 
 ---
 
-## 🖼️ Key Components
+##  Key Components
 
 ### Demo Video
 
@@ -40,7 +40,7 @@ https://github.com/user-attachments/assets/bc4f4f55-18e5-496b-b660-bc25d9e33571
 
 ---
 
-### 🔹 OIDC Pipeline Integration
+### OIDC Pipeline Integration
 ![OIDC](images/oidc.png)
 
 GitHub Actions authenticates directly with AWS via OIDC — no static credentials.  
@@ -48,14 +48,14 @@ This ensures **secure, short-lived tokens** for Terraform plan/apply and image d
 
 ---
 
-### 🔹 CodeDeploy Blue/Green
+### CodeDeploy Blue/Green
 ![CodeDeploy](images/codeDeploy.png)
 
 Traffic between blue and green target groups is shifted automatically after successful health checks, ensuring **zero-downtime deployments**.
 
 ---
 
-### 🔹 WAF Configuration
+###  WAF Configuration
 ![WAF](images/waf.png)
 ![WAF Firewall](images/wafFirewall.png)
 
@@ -64,20 +64,20 @@ Custom rules and rate limiting policies are defined through Terraform.
 
 ---
 
-### 🔹 Private Endpoints
+###  Private Endpoints
 ![Endpoints](images/endpoints.png)
 
 VPC Interface Endpoints for CloudWatch, ECR, and Logs keep all ECS traffic internal to AWS.  
 No data leaves the VPC, improving security and latency.
 
 ---
-## 🚀 CI/CD Deployment Summary — URL Shortener on ECS Fargate
+##  CI/CD Deployment Summary — URL Shortener on ECS Fargate
 
 This project implements a **fully automated CI/CD pipeline** using **GitHub Actions**, **ECR**, **EventBridge**, **Lambda**, and **CodeDeploy** to deploy a containerized FastAPI application onto **ECS Fargate** with **Blue/Green deployments** and zero downtime.
 
 ---
 
-### 🔄 End-to-End Flow
+###  End-to-End Flow
 
 1. **Developer Commit** → A push to `dev`, `staging`, or `main` triggers the GitHub Actions workflow.  
 2. **Build Stage** → GitHub Actions builds the Docker image, runs static analysis (**Checkov**, **TFLint**, **Trivy**), validates Terraform, and authenticates via **OIDC** (no stored AWS keys).  
@@ -89,16 +89,16 @@ This project implements a **fully automated CI/CD pipeline** using **GitHub Acti
 
 ---
 
-### 📊 Summary Table
+###  Summary Table
 
 | Stage | Trigger | AWS / Service | Action |
 |-------|----------|----------------|--------|
-| 🧑‍💻 Developer commit | Git push | **GitHub Actions** | Lint, scan, and build Docker image |
-| 🐳 Build & Push | CI workflow | **Docker + ECR** | Build and push image to ECR |
-| ⚡ ECR push event | ECR image upload | **EventBridge** | Invoke Lambda trigger |
-| 🧠 Automation | EventBridge event | **Lambda** | Register new ECS task + trigger CodeDeploy |
-| 🚀 Deployment | Lambda output | **CodeDeploy** | Perform Blue/Green deployment |
-| ✅ Validation | Health checks | **ECS Fargate + ALB** | Confirm healthy targets and cutover traffic |
+|  Developer commit | Git push | **GitHub Actions** | Lint, scan, and build Docker image |
+|  Build & Push | CI workflow | **Docker + ECR** | Build and push image to ECR |
+|  ECR push event | ECR image upload | **EventBridge** | Invoke Lambda trigger |
+|  Automation | EventBridge event | **Lambda** | Register new ECS task + trigger CodeDeploy |
+|  Deployment | Lambda output | **CodeDeploy** | Perform Blue/Green deployment |
+|  Validation | Health checks | **ECS Fargate + ALB** | Confirm healthy targets and cutover traffic |
 
 ---
 
@@ -107,7 +107,7 @@ A secure, automated, and production-ready pipeline that continuously delivers co
 
 ---
 
-## 🧠 Key Learnings
+##  Key Learnings
 
 - Implementing **secure CI/CD without AWS keys**
 - Managing **multi-env Terraform state** (S3 + DynamoDB)
@@ -117,7 +117,7 @@ A secure, automated, and production-ready pipeline that continuously delivers co
 
 ---
 
-## 📂 Repository Structure
+##  Repository Structure
 
 app/ # FastAPI app
 infra/
@@ -129,7 +129,7 @@ infra/
 
 ---
 
-## 🧩 Tech Stack
+##  Tech Stack
 
 | Category | Tools |
 |-----------|-------|
@@ -144,11 +144,11 @@ infra/
 
 ---
 
-### ⚖️ Tradeoffs & Decisions
+###  Tradeoffs & Decisions
 
 - **VPC Endpoints over NAT**  
   Chosen for cost and security — avoids NAT gateway charges and keeps traffic within the VPC.  
-  ❌ Slightly more setup per service.
+  ❌ lightly more setup per service.
 
 - **OIDC over Long-Lived Keys**  
   Secure, short-lived credentials tied to GitHub Actions.  
@@ -160,7 +160,7 @@ infra/
 
 ---
 
-## 🧭 Next Steps
+##  Next Steps
 
 - Add **CloudWatch Alarms → SNS notifications**
 - Introduce **Checkov / Tfsec** for IaC security
@@ -169,7 +169,7 @@ infra/
 
 ---
 
-### 🏁 Outcome
+###  Outcome
 
 A fully automated, production-grade **ECS Fargate deployment** demonstrating:
 - Infrastructure as Code discipline  
