@@ -33,9 +33,9 @@ resource "aws_lb_target_group" "blue" {
 
   deregistration_delay = 10
 
- lifecycle {
-   prevent_destroy = true
-  }
+ #lifecycle {
+ #  prevent_destroy = true
+ # }
 
   tags = {
     Environment = var.environment
@@ -61,9 +61,9 @@ resource "aws_lb_target_group" "green" {
 
   deregistration_delay = 10
 
-  lifecycle {
-    prevent_destroy = true
-  }
+ # lifecycle {
+  #  prevent_destroy = true
+ # }
 
   tags = {
     Environment = var.environment

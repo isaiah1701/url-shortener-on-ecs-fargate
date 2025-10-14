@@ -174,7 +174,7 @@ async def root():
             <div class="card">
                 <div class="section-title">Bulk Shortening</div>
                 <textarea id="bulkUrls" rows="4" 
-                    placeholder="Enter multiple URLs, one per line..."></textarea>
+                    placeholder="Enter multiple URLs, one per line , include complete URLs i.e https://youtube.com ..."></textarea>
                 <button onclick="shortenBulk()">Create Multiple Short URLs</button>
             </div>
 
