@@ -160,7 +160,7 @@ exports.handler = async (event) => {
   const executionRoleArn = process.env.EXECUTION_ROLE_ARN;
   const applicationName  = process.env.APPLICATION_NAME;
   const deploymentGroup  = process.env.DEPLOYMENT_GROUP;
-  const containerRepoUri = process.env.CONTAINER_REPO_URI;  // e.g. "0449....dkr.ecr.eu-west-2.amazonaws.com/staging-urlshortener"
+  const containerRepoUri = process.env.CONTAINER_REPO_URI;  
 
   // 1) Describe current task def (by family) to clone settings
   const cur = await ecs.send(new DescribeTaskDefinitionCommand({ taskDefinition: family }));
