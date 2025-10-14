@@ -22,6 +22,9 @@ It builds upon the original CoderCo ECS challenge and extends it into a **secure
 
 ##  Key Components
 
+### Architecture diagram
+
+
 <img width="1389" height="1168" alt="ECSV2 drawio (1)" src="https://github.com/user-attachments/assets/b63b8a66-0902-48d7-b2a9-eb3e9f92548b" />
 
 ### Demo Video
